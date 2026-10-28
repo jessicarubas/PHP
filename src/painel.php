@@ -1,14 +1,4 @@
 <?php
-
-session_start();
-if (!isset($_SESSION['usuario'])) {
-  header('Location: login.php'); exit;
-}
-
-echo "Olá , ". $_SESSION['usuario']['nome'];
-echo " <a href="sair.php">Sair</a>";
-
-<?php
 session_start();
 
 if (!isset($_SESSION['usuario'])) {
@@ -21,6 +11,7 @@ if (!isset($_SESSION['usuario'])) {
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel</title>
 
     <style>
@@ -39,19 +30,32 @@ if (!isset($_SESSION['usuario'])) {
             border-radius: 8px;
         }
 
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
         a {
+            display: inline-block;
             color: white;
             background: #333;
             padding: 10px 20px;
             text-decoration: none;
             border-radius: 5px;
         }
+
+        a:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body>
 
     <div class="painel">
-        <h2>Olá, <?= htmlspecialchars($_SESSION['usuario']['nome']) ?>!</h2>
+        <h2>
+            Olá, <?= htmlspecialchars($_SESSION['usuario']['nome'] ?? 'Usuário', ENT_QUOTES, 'UTF-8') ?>!
+        </h2>
+
         <a href="sair.php">Sair</a>
     </div>
 
