@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../autoload.php';
 
 use App\Database\Conexao;
+use App\Support\ImagemProduto;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = trim($_POST['nome'] ?? '');
@@ -9,22 +10,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $estoque = (int) ($_POST['estoque'] ?? 0);
 
     if ($nome !== '' && $preco >= 0 && $estoque >= 0) {
-        $stmt = Conexao::get()->prepare(
-            'INSERT INTO produtos (nome, preco, estoque)
-             VALUES (:n, :p, :e)'
-        );
+        try {
+            $imagem = ImagemProduto::salvar($_FILES['imagem'] ?? null);
+            $stmt = Conexao::get()->prepare(
+                'INSERT INTO produtos (nome, preco, estoque, imagem)
+                 VALUES (:n, :p, :e, :i)'
+            );
 
-        $stmt->execute([
-            ':n' => $nome,
-            ':p' => $preco,
-            ':e' => $estoque
-        ]);
+            $stmt->execute([
+                ':n' => $nome,
+                ':p' => $preco,
+                ':e' => $estoque,
+                ':i' => $imagem
+            ]);
 
-        header('Location: index.php');
-        exit;
+            header('Location: index.php');
+            exit;
+        } catch (InvalidArgumentException $e) {
+            $erro = $e->getMessage();
+        }
+    } else {
+        $erro = 'Preencha os dados corretamente.';
     }
-
-    $erro = 'Preencha os dados corretamente.';
 }
 ?>
 
@@ -75,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></p>
     <?php endif; ?>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <label for="nome">Nome:</label>
         <input type="text" id="nome" name="nome" required>
 
@@ -86,6 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="estoque">Estoque:</label>
         <input type="number" id="estoque" name="estoque"
                min="0" step="1" required>
+
+        <label for="imagem">Imagem do produto (opcional):</label>
+        <input type="file" id="imagem" name="imagem"
+               accept="image/jpeg,image/png,image/webp">
 
         <button type="submit">Salvar produto</button>
     </form>

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../autoload.php';
 
 use App\Database\Conexao;
+use App\Support\ImagemProduto;
 
 $pdo = Conexao::get();
 
@@ -18,17 +19,23 @@ if (!$p) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $pdo->prepare(
-        'UPDATE produtos SET nome = :n, preco = :p, estoque = :e WHERE id = :id'
-    )->execute([
-        ':n' => $_POST['nome'],
-        ':p' => $_POST['preco'],
-        ':e' => $_POST['estoque'],
-        ':id' => $id
-    ]);
+    try {
+        $imagem = ImagemProduto::salvar($_FILES['imagem'] ?? null, $p['imagem'] ?? null);
+        $pdo->prepare(
+            'UPDATE produtos SET nome = :n, preco = :p, estoque = :e, imagem = :i WHERE id = :id'
+        )->execute([
+            ':n' => trim($_POST['nome'] ?? ''),
+            ':p' => $_POST['preco'] ?? 0,
+            ':e' => $_POST['estoque'] ?? 0,
+            ':i' => $imagem,
+            ':id' => $id
+        ]);
 
-    header('Location: index.php');
-    exit;
+        header('Location: index.php');
+        exit;
+    } catch (InvalidArgumentException $e) {
+        $erro = $e->getMessage();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -42,7 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <h1>Editar produto</h1>
 
-    <form method="post">
+    <?php if (isset($erro)): ?>
+        <p><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></p>
+    <?php endif; ?>
+
+    <form method="post" enctype="multipart/form-data">
         <label>Nome:</label>
         <input
             type="text"
@@ -70,6 +81,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             name="estoque"
             value="<?= htmlspecialchars((string)$p['estoque']) ?>"
             required
+        >
+
+        <br><br>
+
+        <?php if (!empty($p['imagem'])): ?>
+            <p>Imagem atual:</p>
+            <img
+                src="../<?= htmlspecialchars($p['imagem'], ENT_QUOTES, 'UTF-8') ?>"
+                alt="Imagem de <?= htmlspecialchars($p['nome'], ENT_QUOTES, 'UTF-8') ?>"
+                style="max-width: 150px; max-height: 120px; object-fit: contain"
+            >
+            <br><br>
+        <?php endif; ?>
+
+        <label for="imagem">Trocar imagem (opcional):</label>
+        <input
+            type="file"
+            id="imagem"
+            name="imagem"
+            accept="image/jpeg,image/png,image/webp"
         >
 
         <br><br>

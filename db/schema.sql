@@ -7,10 +7,10 @@ CREATE TABLE produtos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nome VARCHAR(120) NOT NULL,
   descricao TEXT,
+  imagem VARCHAR(255) NULL,
   preco DECIMAL(10,2) NOT NULL,
   estoque INT NOT NULL DEFAULT 0,
   categoria_id INT,
   criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 );
-

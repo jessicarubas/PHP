@@ -69,6 +69,7 @@ $produtos = Conexao::get()
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Imagem</th>
                 <th>Nome</th>
                 <th>Preço</th>
                 <th>Estoque</th>
@@ -79,12 +80,24 @@ $produtos = Conexao::get()
         <tbody>
             <?php if (empty($produtos)): ?>
                 <tr>
-                    <td colspan="5">Nenhum produto cadastrado.</td>
+                    <td colspan="6">Nenhum produto cadastrado.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($produtos as $p): ?>
                     <tr>
                         <td><?= (int) $p['id'] ?></td>
+
+                        <td>
+                            <?php if (!empty($p['imagem'])): ?>
+                                <img
+                                    src="../<?= htmlspecialchars($p['imagem'], ENT_QUOTES, 'UTF-8') ?>"
+                                    alt="Imagem de <?= htmlspecialchars($p['nome'], ENT_QUOTES, 'UTF-8') ?>"
+                                    style="width: 100px; height: 60px; object-fit: contain"
+                                >
+                            <?php else: ?>
+                                Sem imagem
+                            <?php endif; ?>
+                        </td>
 
                         <td>
                             <?= htmlspecialchars($p['nome'], ENT_QUOTES, 'UTF-8') ?>
